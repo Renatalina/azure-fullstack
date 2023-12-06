@@ -23,7 +23,7 @@
     "cloudfront:update:build:deploy": "npm run cloudfront:setup && npm run cloudfront:build:deploy",
     "cloudfront:update:build:deploy:nc": "npm run cloudfront:setup && npm run cloudfront:build:deploy:nc",
     "serverless:remove": "sls remove",
-    "azure:deploy": "az storage blob upload-batch -s './dist' -d '$web' --account-name 'natalinaoverlords' --overwrite",
+    "azure:deploy": "az storage blob upload-batch -s 'dist' -d '$web' --account-name 'natalinaoverlords' --overwrite",
     "azure:build:deploy": "npm run build && npm run azure:deploy"
   },
   "dependencies": {
