@@ -8,7 +8,7 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
 
     context.res = {
         status: product? 200 : 404, /* Defaults to 200 */
-        body: product ? product : console.error("Product not found")        
+        body: product ? product : context.log("Product not found")        
     };
 };
 
