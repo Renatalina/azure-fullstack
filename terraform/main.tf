@@ -13,40 +13,40 @@ terraform {
 provider "azurerm" {
   features {}
 }
- 
-resource "azurerm_resource_group" "front_end_rg4444" {
-  name     = "rg-frontend-sand-ne-4444"
+
+resource "azurerm_resource_group" "front_end_rg" {
+  name     = "rg-frontend-sand-ne-001"
   location = "northeurope"
 }
- 
+
 resource "azurerm_storage_account" "front_end_storage_account" {
-  name     = "natalinaoverlords"
-  location = "northeurope"
- 
+  name                     = "natalinaoverlord"
+  location                 = "northeurope"
+
   account_replication_type = "LRS"
   account_tier             = "Standard"
   account_kind             = "StorageV2"
-  resource_group_name      = azurerm_resource_group.front_end_rg4444.name
- 
+  resource_group_name      = azurerm_resource_group.front_end_rg.name
+
   static_website {
     index_document = "index.html"
   }
 }
 
-resource "azurerm_resource_group" "product_service_rg4444" {
+resource "azurerm_resource_group" "product_service_rg" {
   location = "northeurope"
-  name     = "rg-product-service-sand-ne-4444"
+  name     = "rg-product-service-sand-ne-001"
 }
 
 resource "azurerm_storage_account" "products_service_fa" {
-  name     = "natalinaproject"
+  name     = "stgsangproductsfane002"
   location = "northeurope"
 
   account_replication_type = "LRS"
   account_tier             = "Standard"
   account_kind             = "StorageV2"
 
-  resource_group_name = azurerm_resource_group.product_service_rg4444.name
+  resource_group_name = azurerm_resource_group.product_service_rg.name
 }
 
 resource "azurerm_storage_share" "products_service_fa" {
@@ -63,7 +63,7 @@ resource "azurerm_service_plan" "product_service_plan" {
   os_type  = "Windows"
   sku_name = "Y1"
 
-  resource_group_name = azurerm_resource_group.product_service_rg4444.name
+  resource_group_name = azurerm_resource_group.product_service_rg.name
 }
 
 resource "azurerm_application_insights" "products_service_fa" {
@@ -72,16 +72,16 @@ resource "azurerm_application_insights" "products_service_fa" {
   location         = "northeurope"
 
 
-  resource_group_name = azurerm_resource_group.product_service_rg4444.name
+  resource_group_name = azurerm_resource_group.product_service_rg.name
 }
 
 
 resource "azurerm_windows_function_app" "products_service" {
-  name     = "fa-products-service-ne-4444"
+  name     = "fa-products-service-sand-ne-001-natalina"
   location = "northeurope"
 
   service_plan_id     = azurerm_service_plan.product_service_plan.id
-  resource_group_name = azurerm_resource_group.product_service_rg4444.name
+  resource_group_name = azurerm_resource_group.product_service_rg.name
 
   storage_account_name       = azurerm_storage_account.products_service_fa.name
   storage_account_access_key = azurerm_storage_account.products_service_fa.primary_access_key
@@ -123,4 +123,72 @@ resource "azurerm_windows_function_app" "products_service" {
       tags["hidden-link: /app-insights-conn-string"]
     ]
   }
+}
+
+resource "azurerm_api_management" "core_apim" {
+  location        = "northeurope"
+  name            = "apim-sand-ne-4444"
+  publisher_email = "overlordnatalina@gmail.com"
+  publisher_name  = "Natalia Viskovatykh"
+
+  resource_group_name = azurerm_resource_group.product_service_rg.name
+  sku_name            = "Consumption_0"
+}
+
+resource "azurerm_api_management_api" "products_api" {
+  api_management_name = azurerm_api_management.core_apim.name
+  name                = "products-service-api"
+  resource_group_name = azurerm_resource_group.product_service_rg.name
+  revision            = "1"
+
+  display_name = "Products Service API"
+
+  protocols = ["https"]
+}
+
+data "azurerm_function_app_host_keys" "products_keys" {
+  name = azurerm_windows_function_app.products_service.name
+  resource_group_name = azurerm_resource_group.product_service_rg.name
+}
+
+resource "azurerm_api_management_backend" "products_fa" {
+  name = "products-service-backend"
+  resource_group_name = azurerm_resource_group.product_service_rg.name
+  api_management_name = azurerm_api_management.core_apim.name
+  protocol = "http"
+  url = "https://${azurerm_windows_function_app.products_service.name}.azurewebsites.net/api"
+  description = "Products API"
+
+  credentials {
+    certificate = []
+    query = {}
+
+    header = {
+      "x-functions-key" = data.azurerm_function_app_host_keys.products_keys.default_function_key
+    }
+  }
+}
+
+resource "azurerm_api_management_api_policy" "api_policy" {
+  api_management_name = azurerm_api_management.core_apim.name
+  api_name            = azurerm_api_management_api.products_api.name
+  resource_group_name = azurerm_resource_group.product_service_rg.name
+
+  xml_content = <<XML
+ <policies>
+    <inbound>
+        <set-backend-service backend-id="${azurerm_api_management_backend.products_fa.name}"/>
+        <base/>
+    </inbound>
+    <backend>
+        <base/>
+    </backend>
+    <outbound>
+        <base/>
+    </outbound>
+    <on-error>
+        <base/>
+    </on-error>
+ </policies>
+XML
 }

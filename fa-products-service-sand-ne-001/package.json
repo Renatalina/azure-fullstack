@@ -7,7 +7,8 @@
     "watch": "tsc -w",
     "prestart": "npm run build",
     "start": "func start",
-    "test": "echo \"No tests yet...\""
+    "test": "echo \"No tests yet...\"",
+    "azure:deploy": "func azure functionapp publish fa-products-service-sand-ne-001-natalina"
   },
   "dependencies": {},
   "devDependencies": {
