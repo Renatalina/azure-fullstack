@@ -14,19 +14,14 @@ const database = cosmosClient.database(databaseName);
 const containerProduct = database.container(container.products);
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
-    context.log('HTTP trigger function http-get-product-by-id processed a request.');
-    const { productId } = req.params;
+    context.log('HTTP trigger function http-post-product processed a request.');
 
-    const results = await containerProduct.items
-        .query({
-            query: "SELECT * FROM c WHERE  c.id = @id",
-            parameters: [{ name: "@id", value: productId }]
-        })
-        .fetchAll();
-    context.log(results.resources);
+    const results= await containerProduct.items.upsert(req.body);
+
+    context.log(results);
     context.res = {
-        status: results.resources? 200 : 404, /* Defaults to 200 */
-        body: results.resources ? results.resources : context.log("Product not found")        
+        status: 200 , /* Defaults to 200 */
+        body: results
     };
 };
 
