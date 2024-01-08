@@ -1,5 +1,6 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
 import { CosmosClient } from "@azure/cosmos";
+import { v4 as uuidv4 } from 'uuid';
 require('dotenv').config(); 
 
 
@@ -15,13 +16,14 @@ const containerProduct = database.container(container.products);
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
     context.log('HTTP trigger function http-post-product processed a request.');
+    req.body.id=uuidv4();
 
-    const results= await containerProduct.items.upsert(req.body);
+    const results= await containerProduct.items.create(req.body);
 
     context.log(results);
     context.res = {
-        status: 200 , /* Defaults to 200 */
-        body: results
+        status: results.resource? 200 : 404 , /* Defaults to 200 */
+        body: results.resource
     };
 };
 

@@ -8,9 +8,6 @@ const endpoint = process.env.COSMOS_ENDPOINT;
 const databaseName = `products-db`;
 const container = {'products':'products', 'stock':'stock'};
 
-console.log(key);
-console.log(endpoint);
-
 const cosmosClient = new CosmosClient({ endpoint, key });
 
 const database = cosmosClient.database(databaseName);
@@ -19,11 +16,28 @@ const containerStock = database.container(container.stock);
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
     context.log('HTTP trigger function processed a request.');
-    const response = await containerProduct.items.readAll().fetchAll();
-    context.log(response.resources);
+    const products = await containerProduct.items.readAll().fetchAll();
+    const stocks = await containerStock.items.readAll().fetchAll();
+
+    const response = products.resources.map((product) => {
+        const productStock = stocks.resources.find(
+          (stock) => stock.product_id === product.id
+        );
+    
+        return {
+          id: product.id,
+          title: product.title,
+          description: product.description,
+          price: product.price,
+          count: productStock ? productStock.count : 0,
+        };
+      })
+
+    context.log(response);
+
     context.res = {
-        status: response.resources?  200 : 400, /* Defaults to 200 */
-        body: response.resources? response.resources : context.log("Error with list of resources")
+        status: response?  200 : 400, /* Defaults to 200 */
+        body: response? response : context.log("Error with list of resources")
     };
 
 };
