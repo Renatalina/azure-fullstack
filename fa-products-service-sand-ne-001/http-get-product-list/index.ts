@@ -16,6 +16,7 @@ const containerStock = database.container(container.stock);
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
     context.log('HTTP trigger function processed a request.');
+    context.log(req);
     const products = await containerProduct.items.readAll().fetchAll();
     const stocks = await containerStock.items.readAll().fetchAll();
 

@@ -15,6 +15,7 @@ const containerProduct = database.container(container.products);
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
     context.log('HTTP trigger function http-get-product-by-id processed a request.');
+    context.log(req);
     const { productId } = req.params;
 
     const results = await containerProduct.items

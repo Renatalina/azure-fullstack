@@ -175,21 +175,42 @@ resource "azurerm_api_management_api_policy" "api_policy" {
   resource_group_name = azurerm_resource_group.product_service_rg.name
 
   xml_content = <<XML
- <policies>
+<policies>
+    #<inbound>
+       # <set-backend-service backend-id="${azurerm_api_management_backend.products_fa.name}"/>
+      #  <base/>
+   # </inbound>
+    #<backend>
+        #<base/>
+    #</backend>
+   # <outbound>
+        #<base/>
+   # </outbound>
+   # <on-error>
+       # <base/>
+   # </on-error>
+
     <inbound>
-        <set-backend-service backend-id="${azurerm_api_management_backend.products_fa.name}"/>
-        <base/>
+    <cors allow-credentials="true">
+      <allowed-origins>
+        <origin>https://natalinaoverlord.z16.web.core.windows.net/</origin>
+      </allowed-origins>
+      <allowed-methods preflight-result-max-age="300">
+        <method>GET</method>
+        <method>POST</method>
+        <method>DELETE</method>
+        </allowed-methods>
+      <allowed-headers>
+        <header>*</header>
+      </allowed-headers>
+    </cors>
     </inbound>
     <backend>
-        <base/>
+    <forward-request />
     </backend>
-    <outbound>
-        <base/>
-    </outbound>
-    <on-error>
-        <base/>
-    </on-error>
- </policies>
+    <outbound />
+      <on-error />
+</policies>
 XML
 }
 
