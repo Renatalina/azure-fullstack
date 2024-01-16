@@ -1,0 +1,5 @@
+Created the Function app, using Azure terraform.
+Created the httpTriggered azure function called http-get-product-list, path /products (https://apim-sand-ne-py-001.azure-api.net/products-service/products)
+https://apim-sand-ne-4444.azure-api.net/fa-products-service-sand-ne-001-natalina/products
+Created the httpTriggered azure function called http-get-product-by-id, path /products/{productId} (https://api-management-func.azure-api.net/fa-products-service-sand-ne-001-natalina/products/1f)
+Added newly created APIs to front-end application (https://natalinaoverlord.z16.web.core.windows.net/)

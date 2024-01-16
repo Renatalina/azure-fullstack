@@ -175,20 +175,105 @@ resource "azurerm_api_management_api_policy" "api_policy" {
   resource_group_name = azurerm_resource_group.product_service_rg.name
 
   xml_content = <<XML
- <policies>
+<policies>
+    #<inbound>
+       # <set-backend-service backend-id="${azurerm_api_management_backend.products_fa.name}"/>
+      #  <base/>
+   # </inbound>
+    #<backend>
+        #<base/>
+    #</backend>
+   # <outbound>
+        #<base/>
+   # </outbound>
+   # <on-error>
+       # <base/>
+   # </on-error>
+
     <inbound>
-        <set-backend-service backend-id="${azurerm_api_management_backend.products_fa.name}"/>
-        <base/>
+    <cors allow-credentials="true">
+      <allowed-origins>
+        <origin>https://natalinaoverlord.z16.web.core.windows.net/</origin>
+      </allowed-origins>
+      <allowed-methods preflight-result-max-age="300">
+        <method>GET</method>
+        <method>POST</method>
+        <method>DELETE</method>
+        </allowed-methods>
+      <allowed-headers>
+        <header>*</header>
+      </allowed-headers>
+    </cors>
     </inbound>
     <backend>
-        <base/>
+    <forward-request />
     </backend>
-    <outbound>
-        <base/>
-    </outbound>
-    <on-error>
-        <base/>
-    </on-error>
- </policies>
+    <outbound />
+      <on-error />
+</policies>
 XML
+}
+
+
+
+resource "azurerm_cosmosdb_account" "test_app" {
+  location            = "northeurope"
+  name                = "cosmos-app-sand-ne-001"
+  offer_type          = "Standard"
+  resource_group_name = azurerm_resource_group.product_service_rg.name
+  kind                = "GlobalDocumentDB"
+
+  consistency_policy {
+    consistency_level = "Eventual"
+  }
+
+  capabilities {
+    name = "EnableServerless"
+  }
+
+  geo_location {
+    failover_priority = 0
+    location          = "North Europe"
+  }
+}
+
+resource "azurerm_cosmosdb_sql_database" "products_app" {
+  account_name        = azurerm_cosmosdb_account.test_app.name
+  name                = "products-db"
+  resource_group_name = azurerm_resource_group.product_service_rg.name
+}
+
+
+resource "azurerm_cosmosdb_sql_container" "products" {
+  account_name        = azurerm_cosmosdb_account.test_app.name
+  database_name       = azurerm_cosmosdb_sql_database.products_app.name
+  name                = "products"
+  partition_key_path  = "/id"
+  resource_group_name = azurerm_resource_group.product_service_rg.name
+
+  # Cosmos DB supports TTL for the records
+  default_ttl = -1
+
+  indexing_policy {
+    excluded_path {
+      path = "/*"
+    }
+  }
+}
+
+resource "azurerm_cosmosdb_sql_container" "stock" {
+  account_name        = azurerm_cosmosdb_account.test_app.name
+  database_name       = azurerm_cosmosdb_sql_database.products_app.name
+  name                = "stock"
+  partition_key_path  = "/id"
+  resource_group_name = azurerm_resource_group.product_service_rg.name
+
+  # Cosmos DB supports TTL for the records
+  default_ttl = -1
+
+  indexing_policy {
+    excluded_path {
+      path = "/*"
+    }
+  }
 }
