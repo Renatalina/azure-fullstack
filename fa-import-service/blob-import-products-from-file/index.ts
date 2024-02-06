@@ -5,7 +5,7 @@ require('dotenv').config();
 
 const blobTrigger: AzureFunction = async function(context: Context, myBlob: any): Promise<void> {
     const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AzureWebJobsStorage);
-    const containerClient = blobServiceClient.getContainerClient('uploaded');
+    const containerClient = blobServiceClient.getContainerClient('my-container');
 
     context.log("JavaScript blob trigger function processed blob \n Blob:", context.bindingData.blobTrigger, "\n Blob Size:", myBlob.length, "Bytes");
 

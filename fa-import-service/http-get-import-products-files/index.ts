@@ -6,7 +6,7 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     context.log('HTTP trigger function processed a request.');
 
     const fileName = req.query.name;
-    const containerName = 'natalinas-container'; 
+    const containerName = 'my-container'; 
 
     const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AzureWebJobsStorage || '');
     context.log(blobServiceClient);
