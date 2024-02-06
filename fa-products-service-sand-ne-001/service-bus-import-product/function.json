@@ -1,0 +1,21 @@
+{
+  "bindings": [
+    {
+      "name": "mySbMsg",
+      "type": "serviceBusTrigger",
+      "direction": "in",
+      "queueName": "natalina_servicebus_queue",
+      "connection": "ServiceBusConnectionString"
+    },
+    {
+      "type": "cosmosDB",
+      "direction": "out",
+      "name": "outputDocument",
+      "databaseName": "products-db",
+      "collectionName": "products",
+      "createIfNotExists": true,
+      "connectionStringSetting": "ServiceBusConnectionString"
+    }
+  ],
+  "scriptFile": "../dist/service-bus-import-product/index.js"
+}
